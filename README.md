@@ -8,55 +8,69 @@ To write a program to predict the type of species of the Iris flower using the S
 
 ## Algorithm
 1)Start by Importing the Necessary libraries.
+
 2)Import and Load the Data.
+
 3)Split Dataset into Training and Testing Sets.
+
 4)Train the Model Using Stochastic Gradient Descent (SGD).
+
 5)Make Predictions and Evaluate Accuracy.
+
 6)Generate Confusion Matrix.
+
 7)Stop.
 
 ## Program:
-```
+
 /*
 Program to implement the prediction of iris species using SGD Classifier.
+
 Developed by: SREE LAKSHMI B
+
 RegisterNumber:  25015545[ 212225040421 ]
 */
-
+```
 import pandas as pd
-
-from sklearn.datasets import load_iris
-from sklearn.linear_model import SGDClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score,confusion_matrix
-
+import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report
+data = pd.read_csv("Placement_Data.csv")
+data['status'] = data['status'].map({'Placed': 1, 'Not Placed': 0})
+X = data[['ssc_p', 'mba_p']].values
+y = data['status'].values
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+m = len(y)
+X = np.c_[np.ones(m), X]
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+def cost_function(X, y, theta):
+    h = sigmoid(X @ theta)
+    h = np.clip(h, 1e-10, 1 - 1e-10)   # prevents log(0)
+    return (-1/m) * np.sum(y*np.log(h) + (1-y)*np.log(1-h))
+theta = np.zeros(X.shape[1])
+alpha = 0.1
+cost_history = []
 
-import seaborn as sns
-
-iris = load_iris()
-df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
-
-df['target'] = iris.target
-print(df.head())
-
-X = df.drop('target', axis=1)
-y = df['target']
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-sgd_clf = SGDClassifier(max_iter=1000, tol=1e-3)
-sgd_clf.fit(X_train, y_train)
-y_pred = sgd_clf.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
-
-print(f"Accuracy: {accuracy:.3f}")
-cm = confusion_matrix(y_test, y_pred)
-print("confusion_matrix:")
-print(cm)
+for i in range(500):
+    z = X @ theta
+    h = sigmoid(z)
+    gradient = (1/m) * X.T @ (h - y)
+    theta = theta - alpha * gradient
+    
+    cost = cost_function(X, y, theta)
+    cost_history.append(cost)
+y_pred = (sigmoid(X @ theta) >= 0.5).astype(int)
+accuracy = np.mean(y_pred == y) * 100
+print("Accuracy:", accuracy)
+print("\nClassification Report:")
+print(classification_report(y, y_pred))
 ```
 
 ## Output:
-<img width="568" height="308" alt="Screenshot 2026-05-11 094738" src="https://github.com/user-attachments/assets/3788fb2a-cafc-4941-9b47-905672c33d1b" />
+<img width="447" height="201" alt="Screenshot 2026-05-14 090732" src="https://github.com/user-attachments/assets/507f7b5a-1832-4b6e-bf0f-1afb553cd895" />
 
 
 ## Result:
